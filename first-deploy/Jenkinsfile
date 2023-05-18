@@ -9,7 +9,7 @@ pipeline {
 		stage('Set creds') {
             steps {
               
-                sh 'echo $SVC_ACCOUNT_KEY | base64 -d > ./gcr/jenkins.json'
+                sh 'echo $SVC_ACCOUNT_KEY | base64 -d > ./first-deploy/jenkins.json'
 		            sh 'pwd'
                        
             }
@@ -18,7 +18,7 @@ pipeline {
 	        
      stage('Activate creds') {
 		 steps {  
-			  dir('gcr')
+			  dir('first-deploy')
 			 {
         sh 'gcloud auth activate-service-account jenkins@mi--dev.iam.gserviceaccount.com --key-file=jenkins.json'
 				 }
@@ -27,7 +27,7 @@ pipeline {
 	 
       stage('get cluster creds') {
 		 steps {  
-			  dir('gcr')
+			  dir('first-deploy')
 			 {
         sh 'gcloud container clusters get-credentials cluster-1 --zone us-central1-c --project mi--dev'
 				 }
@@ -36,9 +36,12 @@ pipeline {
 
 	stage('Create GKE cluster') {
 	 steps {
+		  dir('first-deploy')
+			 {
     
         sh 'kubectl apply -f deployment.yaml'
     }
     }
        
    }
+    }

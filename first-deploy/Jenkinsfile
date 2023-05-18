@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    
+    environment {
+    SVC_ACCOUNT_KEY = credentials('terraform-auth')
+  }
+     
+    stages {     
+		stage('Set creds') {
+            steps {
+              
+                sh 'echo $SVC_ACCOUNT_KEY | base64 -d > ./gcr/jenkins.json'
+		            sh 'pwd'
+                       
+            }
+        }
+	
+	        
+     stage('Activate creds') {
+		 steps {  
+			  dir('gcr')
+			 {
+        sh 'gcloud auth activate-service-account jenkins@mi--dev.iam.gserviceaccount.com --key-file=jenkins.json'
+				 }
+		 }
+	 }
+	 
+      stage('get cluster creds') {
+		 steps {  
+			  dir('gcr')
+			 {
+        sh 'gcloud container clusters get-credentials cluster-1 --zone us-central1-c --project mi--dev'
+				 }
+		 }
+	 }
+
+	stage('Create GKE cluster') {
+	 steps {
+    
+        sh 'kubectl apply -f deployment.yaml'
+    }
+    }
+       
+   }
